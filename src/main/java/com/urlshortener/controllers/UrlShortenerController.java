@@ -42,25 +42,31 @@ public class UrlShortenerController {
     {
         logger.info("-----> Entering generateShortLink Controller");
         String userId = userIdFetcher.getUserId(httpServletRequest);
-        Url urlToRet = urlService.generateShortLink(userId,urlVo);
+        if(userId!=null) {
+            Url urlToRet = urlService.generateShortLink(userId, urlVo);
 
-        if(urlToRet != null)
-        {
-            logger.info("-----> Valid url");
-            UrlSuccessResponse urlResponse = new UrlSuccessResponse();
-            urlResponse.setOriginalUrl(urlToRet.getOriginalUrl());
-            urlResponse.setExpirationDate(urlToRet.getExpirationDate());
-            urlResponse.setShortLink(urlToRet.getShortLink());
-            logger.info("-----> Short link generated");
-            return new ResponseEntity<UrlSuccessResponse>(urlResponse, HttpStatus.OK);
+            if (urlToRet != null) {
+                logger.info("-----> Valid url");
+                UrlSuccessResponse urlResponse = new UrlSuccessResponse();
+                urlResponse.setOriginalUrl(urlToRet.getOriginalUrl());
+                urlResponse.setExpirationDate(urlToRet.getExpirationDate());
+                urlResponse.setShortLink(urlToRet.getShortLink());
+                logger.info("-----> Short link generated");
+                return new ResponseEntity<UrlSuccessResponse>(urlResponse, HttpStatus.OK);
+            }
+
+            logger.info("-----> Invalid url");
+            UrlErrorResponse urlErrorResponse = new UrlErrorResponse();
+            urlErrorResponse.setStatus("404");
+            urlErrorResponse.setError("There was an error processing your request. please try again.");
+            return new ResponseEntity<UrlErrorResponse>(urlErrorResponse, HttpStatus.OK);
         }
-
-        logger.info("-----> Invalid url");
-        UrlErrorResponse urlErrorResponse = new UrlErrorResponse();
-        urlErrorResponse.setStatus("404");
-        urlErrorResponse.setError("There was an error processing your request. please try again.");
-        return new ResponseEntity<UrlErrorResponse>(urlErrorResponse,HttpStatus.OK);
-
+        else{
+            UrlErrorResponse urlErrorResponse = new UrlErrorResponse();
+            urlErrorResponse.setStatus("404");
+            urlErrorResponse.setError("Token expired. please try again.");
+            return new ResponseEntity<UrlErrorResponse>(urlErrorResponse, HttpStatus.OK);
+        }
     }
 
     @ApiOperation(value = "Redirects to the original link")
